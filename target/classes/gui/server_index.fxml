@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.echo.p2p_project.server.gui.ServerIndexController">
+   <children>
+      <VBox>
+         <children>
+            <HBox alignment="CENTER">
+               <children>
+                  <VBox alignment="CENTER" spacing="16.0">
+                     <children>
+                        <Label text="Server Controls" />
+                        <Button fx:id="StartServerButton" mnemonicParsing="false" onAction="#StartServerButtonPressed" prefHeight="27.0" prefWidth="102.0" text="Start Server" />
+                        <Button fx:id="StopServerButton" mnemonicParsing="false" onAction="#StopServerButtonPressed" prefHeight="27.0" prefWidth="102.0" text="Stop Server" />
+                     </children>
+                     <padding>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </padding>
+                     <HBox.margin>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </HBox.margin>
+                  </VBox>
+                  <VBox alignment="CENTER" spacing="8.0">
+                     <children>
+                        <Label text="Log" />
+                        <TextArea fx:id="LogField" maxHeight="150.0" prefHeight="150.0" prefWidth="676.0" wrapText="true">
+                           <font>
+                              <Font name="Andale Mono" size="9.0" />
+                           </font></TextArea>
+                     </children>
+                     <padding>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </padding>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER">
+               <children>
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label text="UHPT" />
+                        <TableView fx:id="uhpt_table">
+                          <columns>
+                            <TableColumn fx:id="UHPT_GUID" prefWidth="114.0" text="GUID" />
+                            <TableColumn fx:id="UHPT_IP" prefWidth="115.0" text="IP" />
+                             <TableColumn fx:id="UHPT_PORT" prefWidth="115.0" text="PORT" />
+                          </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </padding>
+                  </VBox>
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label text="UHRT" />
+                        <TableView fx:id="uhrt_table">
+                          <columns>
+                            <TableColumn fx:id="UHRT_GUID" prefWidth="128.0" text="GUID" />
+                            <TableColumn fx:id="UHRT_NAME" prefWidth="115.0" text="NAME" />
+                          </columns>
+                        </TableView>
+                     </children>
+                     <padding>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </padding>
+                  </VBox>
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label text="UHRT Tree" />
+                        <TreeView fx:id="uhrt_tree" />
+                     </children>
+                     <padding>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </padding>
+                  </VBox>
+               </children>
+               <padding>
+                  <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+               </padding>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
