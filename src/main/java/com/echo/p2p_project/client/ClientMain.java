@@ -110,7 +110,7 @@ public class ClientMain {
 
     private static void download(String file_name_to_download, Integer retry_count) {
         if (download_retry_count <= 5) {
-            download_retry_count+=1;
+            download_retry_count += 1;
             System.out.println("Retrying " + download_retry_count);
             HashMap resources = look_up_file(file_name_to_download);
             try {
@@ -119,7 +119,7 @@ public class ClientMain {
                 e.printStackTrace();
             }
             download(resources);
-        }else{
+        } else {
             System.out.println("Give up download.");
             return;
         }
@@ -209,6 +209,8 @@ public class ClientMain {
 
     private static Boolean reg_file(String name) {
         File file = new File("res/" + name);
+        String hash = Util.createSha1(file);
+        System.out.println(hash);
         if (!file.exists()) {
             System.out.println("File not exists !");
             System.out.println("This File is not exist in your file system !");
@@ -218,7 +220,7 @@ public class ClientMain {
             System.out.println("File length: " + file.length());
         }
         try {
-            Resource resource = constructRegistry.ConstructResource(peer.getGUID(), name);
+            Resource resource = constructRegistry.ConstructResource(peer.getGUID(), name, hash);
             ClientMain.DHRT.put(resource.getGUID(), resource);
             DHRT.put(resource.getGUID(), resource);
             System.out.println("File Register Success!");
@@ -295,13 +297,53 @@ public class ClientMain {
             for (Resource r : resources.values()) {
                 System.out.println(r);
             }
-            System.out.println("Please specify the GUID of the resource: ");
+            System.out.println("Checking file hashing...");
+            Boolean hash_all_same = true;
+            String file_hash = ((Resource) resources.values().toArray()[0]).getHash();
+            for (Resource r : resources.values()) {
+                if (!r.getHash().equals(file_hash)) {
+                    hash_all_same = false;
+                    break;
+                }
+            }
             UUID GUID = null;
-            try {
-                GUID = UUID.fromString(sc.nextLine());
-            } catch (IllegalArgumentException e) {
-                System.out.println("UUID Error");
-                return;
+            if (hash_all_same) {
+                System.out.println("Hash is the same, looking for best node...");
+                ArrayList<Peer> processed_peers = new ArrayList<>();
+                for (Resource r : resources.values()) {
+                    for (Peer p : r.possessedBy.values()) {
+                        processed_peers.add(p);
+                    }
+                }
+                processed_peers.sort(new Comparator<Peer>() {
+                    @Override
+                    public int compare(Peer o1, Peer o2) {
+                        return o1.getRoutingMetric() - o2.getRoutingMetric();
+                    }
+                });
+                for (Peer p : processed_peers) {
+                    System.out.println(p.getGUID().toString()+"  <>  " + p.getRoutingMetric());
+                }
+
+                for (Resource r : processed_peers.get(0).possessing.values()) {
+                    System.out.println("File hash: " + file_hash);
+                    System.out.println("Res hash : " + r.getHash());
+                    if (r.getHash().equals(file_hash)) {
+                        System.out.println("Best resource GUID: " + r.getGUID());
+                        GUID = r.getGUID();
+                        break;
+                    }
+                }
+
+            } else {
+                System.out.println("The hash of these files is different, you need to specify the GUID");
+                System.out.println("Please specify the GUID of the resource: ");
+                try {
+                    GUID = UUID.fromString(sc.nextLine());
+                } catch (IllegalArgumentException e) {
+                    System.out.println("UUID Error");
+                    return;
+                }
             }
             if (GUID == null) {
                 System.out.println("UUID Error");
@@ -330,7 +372,7 @@ public class ClientMain {
         File file = null;
         try {
             p2pRegistry = LocateRegistry.getRegistry(IP, port);
-            System.out.println("Try to connect:   "+ p.getGUID());
+            System.out.println("Try to connect:   " + p.getGUID());
             P2P_FileRegistry p2PFileRegistry = (P2P_FileRegistry) p2pRegistry.lookup("p2PFileRegistry");
             System.out.println("Connected.");
             System.out.println("Downloading FROM: " + p.getGUID());

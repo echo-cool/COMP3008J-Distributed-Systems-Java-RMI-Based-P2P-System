@@ -53,7 +53,7 @@ public class ConstructImpl extends UnicastRemoteObject implements ConstructRegis
     }
 
     @Override
-    public Resource ConstructResource(UUID PeerGUID, String name) throws RemoteException {
+    public Resource ConstructResource(UUID PeerGUID, String name, String hash) throws RemoteException {
         Peer peer = ServerMain.UHPT.get(PeerGUID);
 
         //If peer not registered in center
@@ -69,7 +69,7 @@ public class ConstructImpl extends UnicastRemoteObject implements ConstructRegis
         }
 
         String ResName = name;
-        Resource res = new Resource(GUID, ResName);
+        Resource res = new Resource(GUID, ResName, hash);
         res.possessedBy.put(peer.getGUID(), peer);
         ServerMain.UHRT.put(res.getGUID(), res);
         ServerMain.UHPT.get(peer.getGUID()).possessing.put(res.getGUID(), res);

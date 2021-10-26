@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
@@ -12,7 +13,7 @@
    <children>
       <VBox>
          <children>
-            <HBox alignment="CENTER">
+            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                <children>
                   <VBox alignment="CENTER" spacing="16.0">
                      <children>
@@ -30,7 +31,7 @@
                   <VBox alignment="CENTER" spacing="8.0">
                      <children>
                         <Label text="Log" />
-                        <TextArea fx:id="LogField" maxHeight="150.0" prefHeight="150.0" prefWidth="676.0" wrapText="true">
+                        <TextArea fx:id="LogField" maxHeight="150.0" maxWidth="1.7976931348623157E308" prefHeight="150.0" prefWidth="676.0" wrapText="true">
                            <font>
                               <Font name="Andale Mono" size="9.0" />
                            </font></TextArea>
@@ -39,14 +40,30 @@
                         <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
                      </padding>
                   </VBox>
+                  <VBox alignment="CENTER" spacing="8.0">
+                     <children>
+                        <Label text="Registed" />
+                        <BarChart fx:id="bar_chart" prefHeight="190.0" prefWidth="500.0">
+                          <xAxis>
+                            <CategoryAxis side="BOTTOM" />
+                          </xAxis>
+                          <yAxis>
+                            <NumberAxis side="LEFT" />
+                          </yAxis>
+                        </BarChart>
+                     </children>
+                     <padding>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </padding>
+                  </VBox>
                </children>
             </HBox>
-            <HBox alignment="CENTER">
+            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
                <children>
-                  <VBox alignment="CENTER">
+                  <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="UHPT" />
-                        <TableView fx:id="uhpt_table">
+                        <TableView fx:id="uhpt_table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                           <columns>
                             <TableColumn fx:id="UHPT_GUID" prefWidth="114.0" text="GUID" />
                             <TableColumn fx:id="UHPT_IP" prefWidth="115.0" text="IP" />
@@ -58,13 +75,14 @@
                         <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
                      </padding>
                   </VBox>
-                  <VBox alignment="CENTER">
+                  <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="UHRT" />
-                        <TableView fx:id="uhrt_table">
+                        <TableView fx:id="uhrt_table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                           <columns>
                             <TableColumn fx:id="UHRT_GUID" prefWidth="128.0" text="GUID" />
-                            <TableColumn fx:id="UHRT_NAME" prefWidth="115.0" text="NAME" />
+                            <TableColumn fx:id="UHRT_NAME" prefWidth="120.0" text="NAME" />
+                             <TableColumn fx:id="UHRT_HASH" prefWidth="120.0" text="HASH" />
                           </columns>
                         </TableView>
                      </children>
@@ -72,10 +90,10 @@
                         <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
                      </padding>
                   </VBox>
-                  <VBox alignment="CENTER">
+                  <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                      <children>
                         <Label text="UHRT Tree" />
-                        <TreeView fx:id="uhrt_tree" />
+                        <TreeView fx:id="uhrt_tree" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
                      </children>
                      <padding>
                         <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />

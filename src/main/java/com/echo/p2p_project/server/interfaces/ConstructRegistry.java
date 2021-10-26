@@ -16,5 +16,5 @@ import java.util.UUID;
  **/
 public interface ConstructRegistry extends Remote {
     Peer ConstructPeer(String name, String IP, Integer P2P_port) throws RemoteException;
-    Resource ConstructResource(UUID PeerGUID, String name) throws RemoteException;
+    Resource ConstructResource(UUID PeerGUID, String name, String hash) throws RemoteException;
 }

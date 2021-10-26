@@ -1,5 +1,7 @@
 package com.echo.p2p_project.u_model;
 
+import cn.hutool.core.lang.hash.Hash128;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -16,10 +18,17 @@ public class Resource implements Serializable {
     private UUID GUID;
     private String name;
     public HashMap<UUID, Peer> possessedBy = new LinkedHashMap<>();
+    public String hash;
 
     public Resource(UUID GUID, String name) {
         this.GUID = GUID;
         this.name = name;
+    }
+
+    public Resource(UUID GUID, String name, String hash) {
+        this.GUID = GUID;
+        this.name = name;
+        this.hash = hash;
     }
 
     public UUID getGUID() {
@@ -46,12 +55,21 @@ public class Resource implements Serializable {
         this.possessedBy = possessedBy;
     }
 
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
     @Override
     public String toString() {
         return "Resource{" +
                 "GUID=" + GUID +
                 ", name='" + name + '\'' +
                 ", possessedBy=" + possessedBy.keySet() +
+                ", hash='" + hash + '\'' +
                 '}';
     }
 }

@@ -1,10 +1,12 @@
 package com.echo.p2p_project;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @Author: WangYuyang
@@ -24,6 +26,33 @@ public class Util {
             e.printStackTrace();
             return null;
         }
+    }
+    public static String createSha1(File file){
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-1");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        InputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        int n = 0;
+        byte[] buffer = new byte[8192];
+        while (n != -1) {
+            try {
+                n = fis.read(buffer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (n > 0) {
+                digest.update(buffer, 0, n);
+            }
+        }
+        return new HexBinaryAdapter().marshal(digest.digest());
     }
 
 }

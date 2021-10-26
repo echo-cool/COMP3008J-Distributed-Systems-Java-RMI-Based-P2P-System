@@ -10,6 +10,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.util.Callback;
 
@@ -34,6 +36,9 @@ public class ServerIndexController {
     public TableColumn<Peer, String> UHPT_PORT;
     public TableColumn<Resource, String> UHRT_GUID;
     public TableColumn<Resource, String> UHRT_NAME;
+    public BarChart bar_chart;
+    public TableColumn<Resource, String> UHRT_HASH;
+    XYChart.Series bar_data = new XYChart.Series();
 
 
     public void initialize() {
@@ -67,6 +72,14 @@ public class ServerIndexController {
                 return new SimpleStringProperty(param.getValue().getName().toString());
             }
         });
+        UHRT_HASH.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Resource, String>, ObservableValue<String>>() {
+            @Override
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<Resource, String> param) {
+                return new SimpleStringProperty(param.getValue().getHash().toString());
+            }
+        });
+
+        bar_chart.getData().add(bar_data);
 
         ServerMain.UHPT.addListener(new MapChangeListener() {
             @Override
@@ -83,7 +96,6 @@ public class ServerIndexController {
                         ObservableList<Peer> peers = new ObservableListWrapper<Peer>(new ArrayList<>(ServerMain.UHPT.values()));
                         uhpt_table.setItems(peers);
 
-
                         //update tree
                         TreeItem<String> rootItem = new TreeItem<String>("Server");
                         rootItem.setExpanded(true);
@@ -98,6 +110,11 @@ public class ServerIndexController {
 
                         }
                         uhrt_tree.setRoot(rootItem);
+
+                        //
+                        setBarChartData();
+
+
                     }
                 });
 
@@ -133,12 +150,34 @@ public class ServerIndexController {
                         }
                         uhrt_tree.setRoot(rootItem);
 
+                        //
+                        setBarChartData();
+
+
                     }
                 });
             }
         });
 
 
+    }
+
+    private void setBarChartData() {
+        for (int i = 0; i < ServerMain.UHPT.values().size(); i++) {
+            Peer p = (Peer) ServerMain.UHPT.values().toArray()[i];
+            Boolean contains = false;
+            for (Object d : bar_data.getData()) {
+                XYChart.Data data = (XYChart.Data) d;
+                System.out.println(data.getXValue().toString());
+                if (data.getXValue().toString().equals(p.getGUID().toString().substring(0, 4))) {
+                    data.setYValue(p.possessing.size());
+                    contains = true;
+                }
+            }
+            if (!contains)
+                bar_data.getData().add(new XYChart.Data<>(p.getGUID().toString().substring(0, 4), p.possessing.size()));
+        }
+        System.out.println(bar_chart.getData());
     }
 
     public void StartServerButtonPressed(ActionEvent actionEvent) {
