@@ -163,6 +163,7 @@ public class ServerIndexController {
     }
 
     private void setBarChartData() {
+        bar_data.getData().clear();
         for (int i = 0; i < ServerMain.UHPT.values().size(); i++) {
             Peer p = (Peer) ServerMain.UHPT.values().toArray()[i];
             Boolean contains = false;

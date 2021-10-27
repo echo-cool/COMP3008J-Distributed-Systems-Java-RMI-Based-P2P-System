@@ -55,7 +55,7 @@
                   </Button>
                   <VBox alignment="CENTER">
                      <children>
-                        <HBox alignment="CENTER_LEFT">
+                        <HBox alignment="CENTER">
                            <children>
                               <Label text="Download">
                                  <padding>
@@ -80,9 +80,9 @@
                   </VBox>
                   <VBox alignment="TOP_CENTER">
                      <children>
-                        <HBox alignment="CENTER_LEFT">
+                        <HBox alignment="CENTER">
                            <children>
-                              <Label text="Upload     ">
+                              <Label text="Register">
                                  <padding>
                                     <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
                                  </padding>
@@ -103,6 +103,28 @@
                         <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
                      </VBox.margin>
                   </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <HBox alignment="CENTER">
+                           <children>
+                              <Label text="LookUp">
+                                 <padding>
+                                    <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                                 </padding>
+                              </Label>
+                              <TextField fx:id="lookup_filename" />
+                              <Button fx:id="lookup_button" disable="true" mnemonicParsing="false" text="Lookup">
+                                 <HBox.margin>
+                                    <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                  </VBox>
                   <Button fx:id="sync_button" disable="true" mnemonicParsing="false" text="SYNC DHRT" textFill="#ff4700" />
                </children>
             </VBox>
@@ -111,9 +133,9 @@
                   <Label text="DHRT" />
                   <TableView fx:id="DHRT_Table" prefHeight="200.0">
                     <columns>
-                      <TableColumn fx:id="DHRT_GUID" prefWidth="75.0" text="GUID" />
-                      <TableColumn fx:id="DHRT_NAME" prefWidth="75.0" text="NAME" />
-                        <TableColumn fx:id="DHRT_HASH" prefWidth="75.0" text="HASH" />
+                      <TableColumn fx:id="DHRT_GUID" prefWidth="183.0" text="GUID" />
+                      <TableColumn fx:id="DHRT_NAME" minWidth="0.0" prefWidth="151.0" text="NAME" />
+                        <TableColumn fx:id="DHRT_HASH" prefWidth="183.0" text="HASH" />
                     </columns>
                   </TableView>
                   <VBox alignment="CENTER">

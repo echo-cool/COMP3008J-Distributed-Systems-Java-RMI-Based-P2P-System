@@ -2,7 +2,6 @@ package com.echo.p2p_project.server.model;
 
 import com.echo.p2p_project.server.ServerMain;
 import com.echo.p2p_project.u_model.Peer;
-import com.echo.p2p_project.u_model.Resource;
 
 import java.util.UUID;
 
@@ -22,9 +21,16 @@ public class WatchDog {
             @Override
             public void run() {
                 while (running) {
+                    UUID uuid = null;
                     for (int i = 0; i < ServerMain.UHPT.size(); i++) {
-                        UUID uuid = (UUID) ServerMain.UHPT.keySet().toArray()[i];
+                        try {
+                            uuid = (UUID) ServerMain.UHPT.keySet().toArray()[i];
+                        } catch (Exception e) {
+
+                        }
                         Peer p = ServerMain.UHPT.get(uuid);
+                        if(p == null)
+                            return;
 //                        System.out.println(p);
                         if (p == null) {
                             System.out.println("REMOVED(peer is null): " + uuid);
