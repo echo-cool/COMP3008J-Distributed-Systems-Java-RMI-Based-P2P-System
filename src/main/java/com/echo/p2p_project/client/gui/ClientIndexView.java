@@ -22,7 +22,7 @@ public class ClientIndexView extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(ResourceUtil.getResource("gui/client_index.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+        Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Client!");
         stage.setScene(scene);
         stage.show();

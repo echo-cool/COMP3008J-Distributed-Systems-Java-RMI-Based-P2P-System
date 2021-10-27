@@ -13,6 +13,7 @@ import com.echo.p2p_project.server.interfaces.HelloRegistryFacade;
 import com.echo.p2p_project.server.interfaces.SyncingRegistry;
 import com.echo.p2p_project.u_model.Peer;
 import com.echo.p2p_project.u_model.Resource;
+import com.sun.javafx.collections.ObservableMapWrapper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,9 +33,10 @@ import java.util.*;
  * @Description:
  **/
 public class ClientMain {
-    private static final String MainServerIP = "127.0.0.1";
+    public static String MainServerIP = "127.0.0.1";
+    public static int RMI_PORT = 1099;
     public static Peer peer;
-    public static HashMap<UUID, Resource> DHRT = new LinkedHashMap();
+    public static ObservableMapWrapper<UUID, Resource> DHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
     public static Integer retry_times = 0;
     private static String name = "Peer";
     private static String IP = Util.getIP();
@@ -102,7 +104,7 @@ public class ClientMain {
         }
     }
 
-    private static void download(String file_name_to_download) {
+    public static void download(String file_name_to_download) {
         HashMap resources = look_up_file(file_name_to_download);
         download(resources);
         download_retry_count = 0;
@@ -131,7 +133,7 @@ public class ClientMain {
         Boolean file_status = false;
         hasStarted = false;
         try {
-            registry = LocateRegistry.getRegistry(MainServerIP, Util.RMI_PORT);
+            registry = LocateRegistry.getRegistry(MainServerIP, RMI_PORT);
             center_status = lookup_registry() && register_peer() ? true : false;
         } catch (RemoteException e) {
 //            e.printStackTrace();
@@ -207,10 +209,8 @@ public class ClientMain {
 
     }
 
-    private static Boolean reg_file(String name) {
+    public static Boolean reg_file(String name) {
         File file = new File("res/" + name);
-        String hash = Util.createSha1(file);
-        System.out.println(hash);
         if (!file.exists()) {
             System.out.println("File not exists !");
             System.out.println("This File is not exist in your file system !");
@@ -219,6 +219,8 @@ public class ClientMain {
             System.out.println("File ok.");
             System.out.println("File length: " + file.length());
         }
+        String hash = Util.createSha1(file);
+        System.out.println(hash);
         try {
             Resource resource = constructRegistry.ConstructResource(peer.getGUID(), name, hash);
             ClientMain.DHRT.put(resource.getGUID(), resource);
@@ -255,7 +257,8 @@ public class ClientMain {
                     @Override
                     public void run() {
                         try {
-                            DHRT = syncingRegistry.syncUHRT();
+                            HashMap hashMap = syncingRegistry.syncUHRT();
+                            DHRT.putAll(hashMap);
                             System.out.println(Thread.currentThread() + "sync UHRT Finished.");
                         } catch (RemoteException e) {
                             e.printStackTrace();
@@ -269,7 +272,8 @@ public class ClientMain {
         else
             return result;
         try {
-            DHRT = syncingRegistry.syncUHRT();
+            HashMap hashMap = syncingRegistry.syncUHRT();
+            DHRT.putAll(hashMap);
             System.out.println("DHRT Sync Finished !");
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -286,7 +290,7 @@ public class ClientMain {
         return result;
     }
 
-    private static void download(HashMap<UUID, Resource> resources) {
+    public static void download(HashMap<UUID, Resource> resources) {
         if (resources.size() <= 0) {
             System.out.println("Resource can not be download !");
             return;
@@ -364,8 +368,19 @@ public class ClientMain {
             P2P_download(p, resource);
         }
     }
+    public static void sync_DHRT(){
+        HashMap hashMap = null;
+        try {
+            System.out.println("Start syncUHRT");
+            hashMap = syncingRegistry.syncUHRT();
+            DHRT.putAll(hashMap);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        System.out.println("END syncUHRT");
+    }
 
-    private static void P2P_download(Peer p, Resource resource) {
+    public static void P2P_download(Peer p, Resource resource) {
         Integer port = p.getP2P_port();
         String IP = p.getIP();
         Registry p2pRegistry = null;
@@ -376,11 +391,15 @@ public class ClientMain {
             P2P_FileRegistry p2PFileRegistry = (P2P_FileRegistry) p2pRegistry.lookup("p2PFileRegistry");
             System.out.println("Connected.");
             System.out.println("Downloading FROM: " + p.getGUID());
-            file = p2PFileRegistry.download(resource.getGUID());
+            byte[] file_byte = p2PFileRegistry.download(resource.getGUID());
+            System.out.println("File byte[] length: " + file_byte.length);
+            file = FileUtil.writeBytes(file_byte, new File("res/" + resource.getName()));
+
         } catch (RemoteException e) {
             System.out.println("RemoteException");
             try {
-                DHRT = syncingRegistry.syncUHRT();
+                HashMap hashMap = syncingRegistry.syncUHRT();
+                DHRT.putAll(hashMap);
                 download(resource.getName(), download_retry_count);
                 return;
             } catch (RemoteException ex) {

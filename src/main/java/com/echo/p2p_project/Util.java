@@ -16,8 +16,6 @@ import java.security.NoSuchAlgorithmException;
  * @Description:
  **/
 public class Util {
-    public static final int RMI_PORT = 1099;
-
     public static String getIP() {
         try {
             InetAddress ip4 = Inet4Address.getLocalHost();

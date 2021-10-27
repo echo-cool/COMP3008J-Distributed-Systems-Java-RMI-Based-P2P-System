@@ -1,18 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.echo.p2p_project.client.gui.ClientIndexController">
    <children>
-      <VBox prefHeight="451.0" prefWidth="679.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <HBox alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" text="Button" />
+            <VBox alignment="TOP_CENTER">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label text="Server IP    ">
+                           <padding>
+                              <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                           </padding>
+                        </Label>
+                        <TextField fx:id="server_ip" maxWidth="-Infinity" minHeight="-Infinity" prefHeight="30.0" promptText="127.0.0.1" text="127.0.0.1">
+                           <HBox.margin>
+                              <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                           </HBox.margin>
+                        </TextField>
+                     </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </HBox>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label text="Server Port">
+                           <padding>
+                              <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                           </padding>
+                        </Label>
+                        <TextField fx:id="server_port" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="30.0" promptText="1099" text="1099">
+                           <HBox.margin>
+                              <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                           </HBox.margin>
+                        </TextField>
+                     </children>
+                  </HBox>
+                  <Button fx:id="connect_button" mnemonicParsing="false" text="Connect">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                     <VBox.margin>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </VBox.margin>
+                  </Button>
+                  <VBox alignment="CENTER">
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <children>
+                              <Label text="Download">
+                                 <padding>
+                                    <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                                 </padding>
+                              </Label>
+                              <ChoiceBox fx:id="download_datalist" prefWidth="150.0" />
+                              <Button fx:id="download_button" disable="true" mnemonicParsing="false" text="Download">
+                                 <HBox.margin>
+                                    <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </VBox.margin>
+                  </VBox>
+                  <VBox alignment="TOP_CENTER">
+                     <children>
+                        <HBox alignment="CENTER_LEFT">
+                           <children>
+                              <Label text="Upload     ">
+                                 <padding>
+                                    <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                                 </padding>
+                              </Label>
+                              <ChoiceBox fx:id="reg_datalist" prefWidth="150.0" />
+                              <Button fx:id="reg_button" disable="true" mnemonicParsing="false" text="Register Resource">
+                                 <HBox.margin>
+                                    <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                     </VBox.margin>
+                  </VBox>
+                  <Button fx:id="sync_button" disable="true" mnemonicParsing="false" text="SYNC DHRT" textFill="#ff4700" />
+               </children>
+            </VBox>
+            <VBox alignment="TOP_CENTER">
+               <children>
+                  <Label text="DHRT" />
+                  <TableView fx:id="DHRT_Table" prefHeight="200.0">
+                    <columns>
+                      <TableColumn fx:id="DHRT_GUID" prefWidth="75.0" text="GUID" />
+                      <TableColumn fx:id="DHRT_NAME" prefWidth="75.0" text="NAME" />
+                        <TableColumn fx:id="DHRT_HASH" prefWidth="75.0" text="HASH" />
+                    </columns>
+                  </TableView>
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label text="Log">
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </Label>
+                        <TextArea fx:id="log_field" prefHeight="200.0" wrapText="true">
+                           <VBox.margin>
+                              <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+                           </VBox.margin>
+                        </TextArea>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
          </children>
-      </VBox>
+         <padding>
+            <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+         </padding>
+      </HBox>
    </children>
 </AnchorPane>

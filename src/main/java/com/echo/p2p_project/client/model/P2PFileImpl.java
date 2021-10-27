@@ -1,5 +1,6 @@
 package com.echo.p2p_project.client.model;
 
+import cn.hutool.core.io.FileUtil;
 import com.echo.p2p_project.client.ClientMain;
 import com.echo.p2p_project.client.interfaces.P2P_FileRegistry;
 import com.echo.p2p_project.u_model.Resource;
@@ -34,17 +35,20 @@ public class P2PFileImpl extends UnicastRemoteObject implements P2P_FileRegistry
 
 
     @Override
-    public File download(UUID resID) throws RemoteException{
+    public byte[] download(UUID resID) throws RemoteException{
+        System.out.println("Income connection.");
         Resource resource = ClientMain.DHRT.get(resID);
         if(resource == null){
             System.out.println("Resource Not in local DHRT.");
             return null;
         }
         File file = new File("res/" + resource.getName());
+        byte[] file_byte = FileUtil.readBytes(file);
+        System.out.println("File byte[] length: " + file_byte.length);
         if (file==null) {
             System.out.println("Resource Not in File System.");
             return null;
         }
-        return file;
+        return file_byte;
     }
 }

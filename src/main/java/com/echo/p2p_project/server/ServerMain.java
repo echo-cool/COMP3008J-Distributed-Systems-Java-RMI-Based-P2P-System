@@ -25,6 +25,7 @@ import java.util.*;
  * @Description:
  **/
 public class ServerMain{
+    public static final int RMI_PORT = 1099;
     public static ObservableMapWrapper<UUID, Peer> UHPT = new ObservableMapWrapper<>(new LinkedHashMap<>());
     public static ObservableMapWrapper<UUID, Resource> UHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
     private static Registry registry;
@@ -64,7 +65,7 @@ public class ServerMain{
     public static void init() {
         try {
             // Start Registry, Port: 1099
-            registry = LocateRegistry.createRegistry(Util.RMI_PORT);
+            registry = LocateRegistry.createRegistry(RMI_PORT);
             reg_services();
 
 
