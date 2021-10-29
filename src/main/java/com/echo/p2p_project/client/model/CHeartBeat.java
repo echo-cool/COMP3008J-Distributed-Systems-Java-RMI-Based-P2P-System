@@ -29,7 +29,7 @@ public class CHeartBeat {
                         long start = System.currentTimeMillis();
                         Boolean status = heartBeatRegistry.heartBeat(GUID);
                         long end = System.currentTimeMillis();
-                        System.out.println( this.toString() + ": " + (end - start));
+//                        System.out.println( this.toString() + ": " + (end - start));
 //                        System.out.println(status);
                         ClientMain.retry_times = 0;
                     } catch (RemoteException e) {
