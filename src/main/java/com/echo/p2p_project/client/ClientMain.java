@@ -16,8 +16,6 @@ import com.echo.p2p_project.u_model.Resource;
 import com.sun.javafx.collections.ObservableMapWrapper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -246,7 +244,7 @@ public class ClientMain {
         System.out.println("Peer Sync Finished !");
     }
 
-    private static HashMap<UUID, Resource> look_up_file(String file_name) {
+    public static HashMap<UUID, Resource> look_up_file(String file_name) {
         HashMap<UUID, Resource> result = new LinkedHashMap<>();
         System.out.println("Looking for: " + file_name);
         for (Resource r : DHRT.values()) {
@@ -326,7 +324,7 @@ public class ClientMain {
                     }
                 });
                 for (Peer p : processed_peers) {
-                    System.out.println(p.getGUID().toString()+"  <>  " + p.getRoutingMetric());
+                    System.out.println(p.getGUID().toString() + "  <>  " + p.getRoutingMetric());
                 }
 
                 for (Resource r : processed_peers.get(0).possessing.values()) {
@@ -368,7 +366,8 @@ public class ClientMain {
             P2P_download(p, resource);
         }
     }
-    public static void sync_DHRT(){
+
+    public static void sync_DHRT() {
         HashMap hashMap = null;
         try {
             System.out.println("Start syncUHRT");
@@ -381,50 +380,143 @@ public class ClientMain {
     }
 
     public static void P2P_download(Peer p, Resource resource) {
-        Integer port = p.getP2P_port();
-        String IP = p.getIP();
-        Registry p2pRegistry = null;
-        File file = null;
-        try {
-            p2pRegistry = LocateRegistry.getRegistry(IP, port);
-            System.out.println("Try to connect:   " + p.getGUID());
-            P2P_FileRegistry p2PFileRegistry = (P2P_FileRegistry) p2pRegistry.lookup("p2PFileRegistry");
-            System.out.println("Connected.");
-            System.out.println("Downloading FROM: " + p.getGUID());
-            byte[] file_byte = p2PFileRegistry.download(resource.getGUID());
-            System.out.println("File byte[] length: " + file_byte.length);
-            file = FileUtil.writeBytes(file_byte, new File("res/" + resource.getName()));
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long start_time = System.currentTimeMillis();
+                Integer port = p.getP2P_port();
+                String IP = p.getIP();
+                Registry p2pRegistry = null;
+                File file = null;
+                try {
+                    p2pRegistry = LocateRegistry.getRegistry(IP, port);
+                    System.out.println("Try to connect:   " + p.getGUID());
+                    P2P_FileRegistry p2PFileRegistry = (P2P_FileRegistry) p2pRegistry.lookup("p2PFileRegistry");
+                    System.out.println("Connected.");
+                    System.out.println("Downloading FROM: " + p.getGUID());
+                    byte[] file_byte = p2PFileRegistry.download(resource.getGUID());
+                    System.out.println("File byte[] length: " + file_byte.length);
+                    long end_time = System.currentTimeMillis();
+                    long start_writing_time = System.currentTimeMillis();
+                    file = FileUtil.writeBytes(file_byte, new File("download/" + peer.getGUID() + "_FROM_" + p.getGUID() + "_" + resource.getName()));
+                    long end_writing_time = System.currentTimeMillis();
+                    System.out.println("File downloaded !");
+                    System.out.println("File length : " + file.length());
 
-        } catch (RemoteException e) {
-            System.out.println("RemoteException");
-            try {
-                HashMap hashMap = syncingRegistry.syncUHRT();
-                DHRT.putAll(hashMap);
-                download(resource.getName(), download_retry_count);
-                return;
-            } catch (RemoteException ex) {
-                ex.printStackTrace();
+                    float file_size_B = file.length();
+                    float file_size_KB = file.length() / 1024;
+                    float file_size_MB = file_size_KB / 1024;
+                    if (file_size_KB <= 1) {
+                        System.out.println("################# Download Finished #################");
+                        System.out.println("Network COST: " + (end_time - start_time) + " ms.");
+                        System.out.println("Disk COST: " + (end_writing_time - start_writing_time) + " ms.");
+                        System.out.println("DATA Size: " + file_size_B + " Byte.");
+                        System.out.println("Average Speed: " + file_size_B / ((end_time - start_time) / 1000) + " Byte/s.");
+                        System.out.println("#####################################################");
+                    } else {
+                        if (file_size_MB <= 1) {
+                            System.out.println("################# Download Finished #################");
+                            System.out.println("COST: " + (end_time - start_time) + " ms.");
+                            System.out.println("Disk COST: " + (end_writing_time - start_writing_time) + " ms.");
+                            System.out.println("DATA Size: " + file_size_KB + " KB.");
+                            System.out.println("Average Speed: " + file_size_KB / ((end_time - start_time) / 1000) + " KB/s.");
+                            System.out.println("#####################################################");
+                        } else {
+                            System.out.println("################# Download Finished #################");
+                            System.out.println("COST: " + (end_time - start_time) / 1000 + " s.");
+                            System.out.println("Disk COST: " + (end_writing_time - start_writing_time) + " ms.");
+                            System.out.println("DATA Size: " + file_size_MB + " MB.");
+                            System.out.println("Average Speed: " + file_size_MB / ((end_time - start_time) / 1000) + " MB/s.");
+                            System.out.println("#####################################################");
+                        }
+                    }
+
+                } catch (RemoteException e) {
+                    System.out.println("RemoteException");
+                    try {
+                        HashMap hashMap = syncingRegistry.syncUHRT();
+                        DHRT.putAll(hashMap);
+                        download(resource.getName(), download_retry_count);
+                        return;
+                    } catch (RemoteException ex) {
+                        ex.printStackTrace();
+                    }
+                } catch (NotBoundException e) {
+                    e.printStackTrace();
+                }
             }
-//            e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        }
-        if (file != null) {
+        }).start();
+    }
 
-            System.out.println("File downloaded !");
-            System.out.println("File length : " + file.length());
 
-            try {
-                FileUtil.writeToStream(file, new FileOutputStream("download/" + peer.getGUID() + "_FROM_" + p.getGUID() + "_" + resource.getName()));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+    public static void P2P_download(Peer p, Resource resource, Runnable runnable) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long start_time = System.currentTimeMillis();
+                Integer port = p.getP2P_port();
+                String IP = p.getIP();
+                Registry p2pRegistry = null;
+                File file = null;
+                try {
+                    p2pRegistry = LocateRegistry.getRegistry(IP, port);
+                    System.out.println("Try to connect:   " + p.getGUID());
+                    P2P_FileRegistry p2PFileRegistry = (P2P_FileRegistry) p2pRegistry.lookup("p2PFileRegistry");
+                    System.out.println("Connected.");
+                    System.out.println("Downloading FROM: " + p.getGUID());
+                    byte[] file_byte = p2PFileRegistry.download(resource.getGUID());
+                    System.out.println("File byte[] length: " + file_byte.length);
+                    long end_time = System.currentTimeMillis();
+                    long start_writing_time = System.currentTimeMillis();
+                    file = FileUtil.writeBytes(file_byte, new File("download/" + peer.getGUID() + "_FROM_" + p.getGUID() + "_" + resource.getName()));
+                    long end_writing_time = System.currentTimeMillis();
+                    System.out.println("File downloaded !");
+                    System.out.println("File length : " + file.length());
+
+                    float file_size_B = file.length();
+                    float file_size_KB = file.length() / 1024;
+                    float file_size_MB = file_size_KB / 1024;
+                    if (file_size_KB <= 1) {
+                        System.out.println("################# Download Finished #################");
+                        System.out.println("Network COST: " + (end_time - start_time) + " ms.");
+                        System.out.println("Disk COST: " + (end_writing_time - start_writing_time) + " ms.");
+                        System.out.println("DATA Size: " + file_size_B + " Byte.");
+                        System.out.println("Average Speed: " + file_size_B / ((end_time - start_time) / 1000) + " Byte/s.");
+                        System.out.println("#####################################################");
+                    } else {
+                        if (file_size_MB <= 1) {
+                            System.out.println("################# Download Finished #################");
+                            System.out.println("COST: " + (end_time - start_time) + " ms.");
+                            System.out.println("Disk COST: " + (end_writing_time - start_writing_time) + " ms.");
+                            System.out.println("DATA Size: " + file_size_KB + " KB.");
+                            System.out.println("Average Speed: " + file_size_KB / ((end_time - start_time) / 1000) + " KB/s.");
+                            System.out.println("#####################################################");
+                        } else {
+                            System.out.println("################# Download Finished #################");
+                            System.out.println("COST: " + (end_time - start_time) / 1000 + " s.");
+                            System.out.println("Disk COST: " + (end_writing_time - start_writing_time) + " ms.");
+                            System.out.println("DATA Size: " + file_size_MB + " MB.");
+                            System.out.println("Average Speed: " + file_size_MB / ((end_time - start_time) / 1000) + " MB/s.");
+                            System.out.println("#####################################################");
+                        }
+                    }
+
+                } catch (RemoteException e) {
+                    System.out.println("RemoteException");
+                    try {
+                        HashMap hashMap = syncingRegistry.syncUHRT();
+                        DHRT.putAll(hashMap);
+                        download(resource.getName(), download_retry_count);
+                        return;
+                    } catch (RemoteException ex) {
+                        ex.printStackTrace();
+                    }
+                } catch (NotBoundException e) {
+                    e.printStackTrace();
+                }
+                runnable.run();
             }
-
-        } else {
-            System.out.println("P2P_download File Error");
-            return;
-        }
-
+        }).start();
     }
 //
 //    private static void P2P_download(Peer p, Resource resource, Integer retry_count) {

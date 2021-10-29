@@ -47,6 +47,8 @@ public class ClientIndexController {
     public TableColumn<Resource, String> DHRT_NAME;
     public TableColumn<Resource, String> DHRT_HASH;
     public Button sync_button;
+    public TextField lookup_filename;
+    public Button lookup_button;
 
     public void initialize() {
         ObservableList<String> local_file_list = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
@@ -68,7 +70,7 @@ public class ClientIndexController {
                                 remote_file_list.remove(change.getValueRemoved());
                             }
                         }
-                        if(remote_file_list.size() >= 1){
+                        if (remote_file_list.size() >= 1) {
                             download_datalist.setValue(remote_file_list.get(0));
                         }
                     }
@@ -78,12 +80,19 @@ public class ClientIndexController {
         });
         download_datalist.setItems(remote_file_list);
 
-
-        File[] files = FileUtil.ls(System.getProperty("user.dir") + "/res/");
-        local_file_list.clear();
-        for (File f : files) {
-            local_file_list.add(f.getName());
+        try {
+            File[] files = FileUtil.ls(System.getProperty("user.dir") + "/res/");
+            local_file_list.clear();
+            for (File f : files) {
+                local_file_list.add(f.getName());
+            }
+        } catch (Exception e) {
+            System.out.println("Download DIR: " + System.getProperty("user.dir") + "/download/");
+            System.out.println("Resource DIR: " + System.getProperty("user.dir") + "/res/");
+            FileUtil.mkdir(System.getProperty("user.dir") + "/download/");
+            FileUtil.mkdir(System.getProperty("user.dir") + "/res/");
         }
+
         //这里只监听文件或目录的修改事件
         //        修改：res-> 0.a
         //        修改：res-> 0.a
@@ -107,6 +116,8 @@ public class ClientIndexController {
                         for (File f : files) {
                             local_file_list.add(f.getName());
                         }
+                        if (local_file_list.size() >= 1)
+                            download_datalist.setValue(local_file_list.get(0));
                     }
                 });
             }
@@ -123,6 +134,8 @@ public class ClientIndexController {
                         for (File f : files) {
                             local_file_list.add(f.getName());
                         }
+                        if (local_file_list.size() >= 1)
+                            download_datalist.setValue(local_file_list.get(0));
                     }
                 });
 
@@ -140,6 +153,8 @@ public class ClientIndexController {
                         for (File f : files) {
                             local_file_list.add(f.getName());
                         }
+                        if (local_file_list.size() >= 1)
+                            download_datalist.setValue(local_file_list.get(0));
                     }
                 });
             }
@@ -178,6 +193,7 @@ public class ClientIndexController {
                 download_button.setDisable(false);
                 reg_button.setDisable(false);
                 sync_button.setDisable(false);
+                lookup_button.setDisable(false);
             }
         });
 
@@ -220,7 +236,12 @@ public class ClientIndexController {
         download_button.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Resource r = (Resource) download_datalist.getValue();
+                Resource r = null;
+                try {
+                    r = (Resource) download_datalist.getValue();
+                } catch (Exception e) {
+                    return;
+                }
                 if (r != null) {
                     System.out.println(r);
                     ArrayList<Peer> processed_peers = new ArrayList<>();
@@ -236,10 +257,31 @@ public class ClientIndexController {
                     for (Peer p : processed_peers) {
                         System.out.println(p.getGUID().toString() + "  <>  " + p.getRoutingMetric());
                     }
-                    ClientMain.P2P_download(processed_peers.get(0), r);
-                    Dialog dialog = new Dialog();
-                    dialog.show();
+                    ClientMain.P2P_download(processed_peers.get(0), r, new Runnable() {
+                        @Override
+                        public void run() {
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                    alert.setTitle("Information Dialog");
+                                    alert.setHeaderText("File downloaded");
+                                    alert.setContentText("Please check in your download folder!");
+
+                                    alert.showAndWait();
+                                }
+                            });
+                        }
+                    });
+
                 }
+            }
+        });
+        lookup_button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                String filename = lookup_filename.getText();
+                ClientMain.look_up_file(filename);
             }
         });
 
