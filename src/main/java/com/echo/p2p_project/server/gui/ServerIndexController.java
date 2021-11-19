@@ -16,6 +16,8 @@ import javafx.scene.control.*;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @Author: WangYuyang
@@ -37,7 +39,7 @@ public class ServerIndexController {
     public TableColumn<Resource, String> UHRT_GUID;
     public TableColumn<Resource, String> UHRT_NAME;
     public BarChart bar_chart;
-    public TableColumn<Resource, String> UHRT_HASH;
+    public TableColumn<Resource, String> UHRT_By;
     XYChart.Series bar_data = new XYChart.Series();
 
 
@@ -72,14 +74,53 @@ public class ServerIndexController {
                 return new SimpleStringProperty(param.getValue().getName().toString());
             }
         });
-        UHRT_HASH.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Resource, String>, ObservableValue<String>>() {
+        UHRT_By.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Resource, String>, ObservableValue<String>>() {
             @Override
             public ObservableValue<String> call(TableColumn.CellDataFeatures<Resource, String> param) {
-                return new SimpleStringProperty(param.getValue().getHash().toString());
+                return new SimpleStringProperty(String.valueOf(param.getValue().possessedBy.size()));
             }
         });
 
         bar_chart.getData().add(bar_data);
+
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        //update table
+                        ObservableList<Peer> peers = new ObservableListWrapper<Peer>(new ArrayList<>(ServerMain.UHPT.values()));
+                        uhpt_table.setItems(peers);
+
+                        //update table
+                        ObservableList<Resource> resources = new ObservableListWrapper<Resource>(new ArrayList<>(ServerMain.UHRT.values()));
+                        uhrt_table.setItems(resources);
+
+
+                        //update tree
+                        TreeItem<String> rootItem = new TreeItem<String>("Server");
+                        rootItem.setExpanded(true);
+                        for (Peer p : peers) {
+                            TreeItem<String> item = new TreeItem<String>(p.getGUID().toString());
+                            for (Resource r : p.possessing.values()) {
+                                item.setExpanded(true);
+                                TreeItem<String> filename = new TreeItem<String>(r.getName().toString());
+                                item.getChildren().add(filename);
+                            }
+                            rootItem.getChildren().add(item);
+
+                        }
+                        uhrt_tree.setRoot(rootItem);
+
+                        //
+                        setBarChartData();
+
+                    }
+                });
+            }
+        }, 0, 1000);
 
         ServerMain.UHPT.addListener(new MapChangeListener() {
             @Override

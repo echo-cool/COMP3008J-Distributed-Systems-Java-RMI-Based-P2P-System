@@ -15,27 +15,27 @@ import java.util.UUID;
  * @Description:
  **/
 public class Resource implements Serializable {
-    private UUID GUID;
+    private String GUID;
     private String name;
     public HashMap<UUID, Peer> possessedBy = new LinkedHashMap<>();
     public String hash;
 
-    public Resource(UUID GUID, String name) {
+    public Resource(String GUID, String name) {
         this.GUID = GUID;
         this.name = name;
     }
 
-    public Resource(UUID GUID, String name, String hash) {
+    public Resource(String GUID, String name, String hash) {
         this.GUID = GUID;
         this.name = name;
         this.hash = hash;
     }
 
-    public UUID getGUID() {
+    public String getGUID() {
         return GUID;
     }
 
-    public void setGUID(UUID GUID) {
+    public void setGUID(String GUID) {
         this.GUID = GUID;
     }
 

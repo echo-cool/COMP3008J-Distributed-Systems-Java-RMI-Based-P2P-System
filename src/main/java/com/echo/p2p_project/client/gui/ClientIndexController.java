@@ -53,9 +53,9 @@ public class ClientIndexController {
     public void initialize() {
         ObservableList<String> local_file_list = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
         ObservableList<Resource> remote_file_list = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
-        ClientMain.DHRT.addListener(new MapChangeListener<UUID, Resource>() {
+        ClientMain.DHRT.addListener(new MapChangeListener<String, Resource>() {
             @Override
-            public void onChanged(Change<? extends UUID, ? extends Resource> change) {
+            public void onChanged(Change<? extends String, ? extends Resource> change) {
                 log_field.appendText(change.toString());
                 ObservableList<Resource> resources = new ObservableListWrapper<Resource>(new ArrayList<>(ClientMain.DHRT.values()));
                 DHRT_Table.setItems(resources);
@@ -186,7 +186,7 @@ public class ClientIndexController {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        ClientMain.sync_DHRT();
+//                        ClientMain.sync_DHRT();
                     }
                 }).start();
 
@@ -222,7 +222,7 @@ public class ClientIndexController {
         sync_button.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                ClientMain.sync_DHRT();
+//                ClientMain.sync_DHRT();
             }
         });
         reg_button.setOnAction(new EventHandler<ActionEvent>() {

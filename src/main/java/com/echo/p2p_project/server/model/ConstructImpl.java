@@ -51,7 +51,6 @@ public class ConstructImpl extends UnicastRemoteObject implements ConstructRegis
         System.out.println("Peer Reg: " + peer);
         return peer;
     }
-
     @Override
     public Resource ConstructResource(UUID PeerGUID, String name, String hash) throws RemoteException {
         Peer peer = ServerMain.UHPT.get(PeerGUID);
@@ -60,20 +59,47 @@ public class ConstructImpl extends UnicastRemoteObject implements ConstructRegis
         if(peer == null)
             return null; // Res register failed
 
-
-        UUID GUID = UUID.randomUUID();
         //If duplicated GUID
-        if(ServerMain.UHPT.containsKey(GUID)) {
-            System.out.println("DUP GUID!!!!!!!");
-            return null; // Res register failed
+        if(ServerMain.UHRT.containsKey(hash)) {
+            // Res is in UHRT
+            System.out.println("DUP GUID! Res is in UHRT");
+            Resource res = ServerMain.UHRT.get(hash);
+            res.possessedBy.put(peer.getGUID(), peer);
+            ServerMain.UHPT.get(peer.getGUID()).possessing.put(res.getGUID(), res);
+            return res;
         }
 
         String ResName = name;
-        Resource res = new Resource(GUID, ResName, hash);
+        Resource res = new Resource(hash, ResName, hash);
         res.possessedBy.put(peer.getGUID(), peer);
         ServerMain.UHRT.put(res.getGUID(), res);
         ServerMain.UHPT.get(peer.getGUID()).possessing.put(res.getGUID(), res);
         System.out.println("Resources Registered: " + res);
         return res;
     }
+
+//    @Override
+//    public Resource ConstructResource(UUID PeerGUID, String name, String hash) throws RemoteException {
+//        Peer peer = ServerMain.UHPT.get(PeerGUID);
+//
+//        //If peer not registered in center
+//        if(peer == null)
+//            return null; // Res register failed
+//
+//
+//        UUID GUID = UUID.randomUUID();
+//        //If duplicated GUID
+//        if(ServerMain.UHPT.containsKey(GUID)) {
+//            System.out.println("DUP GUID!!!!!!!");
+//            return null; // Res register failed
+//        }
+//
+//        String ResName = name;
+//        Resource res = new Resource(GUID, ResName, hash);
+//        res.possessedBy.put(peer.getGUID(), peer);
+//        ServerMain.UHRT.put(res.getGUID(), res);
+//        ServerMain.UHPT.get(peer.getGUID()).possessing.put(res.getGUID(), res);
+//        System.out.println("Resources Registered: " + res);
+//        return res;
+//    }
 }

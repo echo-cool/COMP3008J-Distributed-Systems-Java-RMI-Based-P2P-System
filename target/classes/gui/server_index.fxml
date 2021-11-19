@@ -82,7 +82,7 @@
                           <columns>
                             <TableColumn fx:id="UHRT_GUID" prefWidth="128.0" text="GUID" />
                             <TableColumn fx:id="UHRT_NAME" prefWidth="120.0" text="NAME" />
-                             <TableColumn fx:id="UHRT_HASH" prefWidth="120.0" text="HASH" />
+                             <TableColumn visible="false" fx:id="UHRT_By" prefWidth="120.0" text="By" />
                           </columns>
                         </TableView>
                      </children>

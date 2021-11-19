@@ -1,17 +1,14 @@
 package com.echo.p2p_project.server;
 
-import com.echo.p2p_project.Util;
 import com.echo.p2p_project.server.interfaces.ConstructRegistry;
 import com.echo.p2p_project.server.interfaces.HeartBeatRegistry;
 import com.echo.p2p_project.server.interfaces.HelloRegistryFacade;
-import com.echo.p2p_project.server.interfaces.SyncingRegistry;
+import com.echo.p2p_project.server.interfaces.FileLookupRegistry;
 import com.echo.p2p_project.server.model.*;
 import com.echo.p2p_project.u_model.Peer;
 import com.echo.p2p_project.u_model.Resource;
 import com.sun.javafx.collections.ObservableMapWrapper;
-import javafx.collections.ObservableMap;
 
-import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -27,7 +24,7 @@ import java.util.*;
 public class ServerMain{
     public static final int RMI_PORT = 1099;
     public static ObservableMapWrapper<UUID, Peer> UHPT = new ObservableMapWrapper<>(new LinkedHashMap<>());
-    public static ObservableMapWrapper<UUID, Resource> UHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
+    public static ObservableMapWrapper<String, Resource> UHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
     private static Registry registry;
     private static Boolean HasStarted = false;
     private static Thread service;
@@ -91,12 +88,12 @@ public class ServerMain{
             HelloRegistryFacade hello = new HelloRegistryFacadeImpl();
             ConstructRegistry constructRegistry = new ConstructImpl();
             HeartBeatRegistry heartBeatRegistry = new HeartBeatImpl();
-            SyncingRegistry syncingRegistry = new SyncingImpl();
+            FileLookupRegistry fileLookupRegistry = new FileLookupImpl();
 
             registry.rebind("HelloRegistry", hello);
             registry.rebind("constructRegistry", constructRegistry);
             registry.rebind("heatBeatRegistry", heartBeatRegistry);
-            registry.rebind("syncingRegistry", syncingRegistry);
+            registry.rebind("syncingRegistry", fileLookupRegistry);
 
         } catch (RemoteException e) {
             e.printStackTrace();

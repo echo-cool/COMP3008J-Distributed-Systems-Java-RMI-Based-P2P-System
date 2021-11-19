@@ -8,9 +8,9 @@ import com.echo.p2p_project.client.interfaces.P2P_FileRegistry;
 import com.echo.p2p_project.client.model.CHeartBeat;
 import com.echo.p2p_project.client.model.P2PFileImpl;
 import com.echo.p2p_project.server.interfaces.ConstructRegistry;
+import com.echo.p2p_project.server.interfaces.FileLookupRegistry;
 import com.echo.p2p_project.server.interfaces.HeartBeatRegistry;
 import com.echo.p2p_project.server.interfaces.HelloRegistryFacade;
-import com.echo.p2p_project.server.interfaces.SyncingRegistry;
 import com.echo.p2p_project.u_model.Peer;
 import com.echo.p2p_project.u_model.Resource;
 import com.sun.javafx.collections.ObservableMapWrapper;
@@ -34,7 +34,7 @@ public class ClientMain {
     public static String MainServerIP = "127.0.0.1";
     public static int RMI_PORT = 1099;
     public static Peer peer;
-    public static ObservableMapWrapper<UUID, Resource> DHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
+    public static ObservableMapWrapper<String, Resource> DHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
     public static Integer retry_times = 0;
     private static String name = "Peer";
     private static String IP = Util.getIP();
@@ -44,7 +44,7 @@ public class ClientMain {
     private static Registry file_service;
     private static ConstructRegistry constructRegistry;
     private static HeartBeatRegistry heartBeatRegistry;
-    private static SyncingRegistry syncingRegistry;
+    private static FileLookupRegistry fileLookupRegistry;
     private static Boolean hasStarted = false;
     private static Scanner sc;
     private static Thread service;
@@ -86,13 +86,14 @@ public class ClientMain {
                     reg_file(res_name);
                     break;
                 case "l":
-                    System.out.print("Look up Filename: ");
-                    String file_name = sc.nextLine();
-                    HashMap res = look_up_file(file_name);
-                    System.out.println(res);
+                    System.out.print("Look up File HASH: ");
+                    String hash = sc.nextLine();
+                    Resource res = look_up_file(hash);
+                    if (res != null)
+                        System.out.println(res);
                     break;
                 case "d":
-                    System.out.print("Download Filename: ");
+                    System.out.print("Download File HASH: ");
                     String file_name_to_download = sc.nextLine();
                     download(file_name_to_download);
 
@@ -102,17 +103,20 @@ public class ClientMain {
         }
     }
 
-    public static void download(String file_name_to_download) {
-        HashMap resources = look_up_file(file_name_to_download);
-        download(resources);
+    public static void download(String hash) {
+        Resource resources = look_up_file(hash);
+        if (resources != null) {
+            System.out.println("Download: " + resources.getGUID());
+            download(resources);
+        }
         download_retry_count = 0;
     }
 
-    private static void download(String file_name_to_download, Integer retry_count) {
+    private static void download(String hash, Integer retry_count) {
         if (download_retry_count <= 5) {
             download_retry_count += 1;
             System.out.println("Retrying " + download_retry_count);
-            HashMap resources = look_up_file(file_name_to_download);
+            Resource resources = look_up_file(hash);
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -196,7 +200,7 @@ public class ClientMain {
             }
             constructRegistry = (ConstructRegistry) registry.lookup("constructRegistry");
             heartBeatRegistry = (HeartBeatRegistry) registry.lookup("heatBeatRegistry");
-            syncingRegistry = (SyncingRegistry) registry.lookup("syncingRegistry");
+            fileLookupRegistry = (FileLookupRegistry) registry.lookup("syncingRegistry");
             return true;
 
         } catch (NotBoundException | RemoteException e) {
@@ -236,7 +240,7 @@ public class ClientMain {
 
     private static void sync_peer() {
         try {
-            peer = syncingRegistry.syncPeer(peer.getGUID());
+            peer = fileLookupRegistry.syncPeer(peer.getGUID());
         } catch (RemoteException e) {
             e.printStackTrace();
             System.out.println("Peer Sync Failed !");
@@ -244,139 +248,50 @@ public class ClientMain {
         System.out.println("Peer Sync Finished !");
     }
 
-    public static HashMap<UUID, Resource> look_up_file(String file_name) {
-        HashMap<UUID, Resource> result = new LinkedHashMap<>();
-        System.out.println("Looking for: " + file_name);
-        for (Resource r : DHRT.values()) {
-            if (r.getName().equals(file_name)) {
-                System.out.println("FOUND in local DHRT.");
-                result.put(r.getGUID(), r);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            HashMap hashMap = syncingRegistry.syncUHRT();
-                            DHRT.putAll(hashMap);
-                            System.out.println(Thread.currentThread() + "sync UHRT Finished.");
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
+    public static Resource look_up_file(String hash) {
+        System.out.println("Looking HASH for: " + hash);
+        Resource res = ClientMain.DHRT.get(hash);
+        if (res == null) {
+            System.out.println("Not found in local DHRT");
+            System.out.println("Lookup in UHRT...");
+            try {
+                res = fileLookupRegistry.lookupInUHRT(hash);
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
-        }
-        if (result.size() == 0)
-            System.out.println("Not found in local DHRT.");
-        else
-            return result;
-        try {
-            HashMap hashMap = syncingRegistry.syncUHRT();
-            DHRT.putAll(hashMap);
-            System.out.println("DHRT Sync Finished !");
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            System.out.println("DHRT Sync Failed !");
-        }
-        for (Resource r : DHRT.values()) {
-            if (r.getName().equals(file_name)) {
-                System.out.println("FOUNT Resource in DHRT (After SYNC REMOTE UHRT)");
-                result.put(r.getGUID(), r);
+            if (res == null) {
+                System.out.println("Not found in UHRT");
+                System.out.println("Abort");
+                return null;
             }
+            System.out.println("Found in UHRT: " + res.getGUID());
+            System.out.println("Update DHRT");
+            ClientMain.DHRT.put(res.getGUID(), res);
         }
-        if (result.size() == 0)
-            System.out.println("Requested Resource NOT FOUND !");
-        return result;
+        else{
+            System.out.println("Found in DHRT.");
+        }
+        return res;
     }
 
-    public static void download(HashMap<UUID, Resource> resources) {
-        if (resources.size() <= 0) {
+    public static void download(Resource resources) {
+        if (resources == null || resources.possessedBy.size() == 0) {
             System.out.println("Resource can not be download !");
             return;
         }
-        if (resources.size() > 1) {
-            System.out.println("There are more than 1 resource with identical name:");
-            System.out.println("File List: ");
-            for (Resource r : resources.values()) {
-                System.out.println(r);
-            }
-            System.out.println("Checking file hashing...");
-            Boolean hash_all_same = true;
-            String file_hash = ((Resource) resources.values().toArray()[0]).getHash();
-            for (Resource r : resources.values()) {
-                if (!r.getHash().equals(file_hash)) {
-                    hash_all_same = false;
-                    break;
-                }
-            }
-            UUID GUID = null;
-            if (hash_all_same) {
-                System.out.println("Hash is the same, looking for best node...");
-                ArrayList<Peer> processed_peers = new ArrayList<>();
-                for (Resource r : resources.values()) {
-                    for (Peer p : r.possessedBy.values()) {
-                        processed_peers.add(p);
-                    }
-                }
-                processed_peers.sort(new Comparator<Peer>() {
-                    @Override
-                    public int compare(Peer o1, Peer o2) {
-                        return o1.getRoutingMetric() - o2.getRoutingMetric();
-                    }
-                });
-                for (Peer p : processed_peers) {
-                    System.out.println(p.getGUID().toString() + "  <>  " + p.getRoutingMetric());
-                }
-
-                for (Resource r : processed_peers.get(0).possessing.values()) {
-                    System.out.println("File hash: " + file_hash);
-                    System.out.println("Res hash : " + r.getHash());
-                    if (r.getHash().equals(file_hash)) {
-                        System.out.println("Best resource GUID: " + r.getGUID());
-                        GUID = r.getGUID();
-                        break;
-                    }
-                }
-
-            } else {
-                System.out.println("The hash of these files is different, you need to specify the GUID");
-                System.out.println("Please specify the GUID of the resource: ");
-                try {
-                    GUID = UUID.fromString(sc.nextLine());
-                } catch (IllegalArgumentException e) {
-                    System.out.println("UUID Error");
-                    return;
-                }
-            }
-            if (GUID == null) {
-                System.out.println("UUID Error");
-                return;
-            }
-            Resource resource = resources.get(GUID);
-            if (resource == null) {
-                System.out.println("Input GUID not in DHRT");
-                return;
-            }
-            Peer p = (Peer) resource.possessedBy.values().stream().sorted().toArray()[0];
-            P2P_download(p, resource);
-        } else {
-            Resource resource = (Resource) resources.values().toArray()[0];
-            if (resource == null)
-                return;
-            Peer p = (Peer) resource.possessedBy.values().stream().sorted().toArray()[0];
-            P2P_download(p, resource);
+        ArrayList<Peer> processed_peers = new ArrayList<>();
+        for (Peer p : resources.possessedBy.values()) {
+            processed_peers.add(p);
         }
-    }
-
-    public static void sync_DHRT() {
-        HashMap hashMap = null;
-        try {
-            System.out.println("Start syncUHRT");
-            hashMap = syncingRegistry.syncUHRT();
-            DHRT.putAll(hashMap);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        System.out.println("END syncUHRT");
+        processed_peers.sort(new Comparator<Peer>() {
+            @Override
+            public int compare(Peer o1, Peer o2) {
+                return o1.getRoutingMetric() - o2.getRoutingMetric();
+            }
+        });
+        Peer best_peer = processed_peers.get(0);
+        System.out.println("Best peer is: " + best_peer.getGUID());
+        P2P_download(best_peer, resources);
     }
 
     public static void P2P_download(Peer p, Resource resource) {
@@ -433,10 +348,13 @@ public class ClientMain {
 
                 } catch (RemoteException e) {
                     System.out.println("RemoteException");
+                    DHRT.clear();
                     try {
-                        HashMap hashMap = syncingRegistry.syncUHRT();
-                        DHRT.putAll(hashMap);
-                        download(resource.getName(), download_retry_count);
+                        Resource res = fileLookupRegistry.lookupInUHRT(resource.getGUID());
+                        if (res != null)
+                            DHRT.put(res.getGUID(), res);
+                        System.out.println("Try to update DHRT.");
+                        download(resource.getGUID(), download_retry_count);
                         return;
                     } catch (RemoteException ex) {
                         ex.printStackTrace();
@@ -503,10 +421,12 @@ public class ClientMain {
 
                 } catch (RemoteException e) {
                     System.out.println("RemoteException");
+                    DHRT.clear();
                     try {
-                        HashMap hashMap = syncingRegistry.syncUHRT();
-                        DHRT.putAll(hashMap);
-                        download(resource.getName(), download_retry_count);
+                        Resource res = fileLookupRegistry.lookupInUHRT(resource.getGUID());
+                        if (res != null)
+                            DHRT.put(res.getGUID(), res);
+                        download(resource.getGUID(), download_retry_count);
                         return;
                     } catch (RemoteException ex) {
                         ex.printStackTrace();
@@ -532,7 +452,7 @@ public class ClientMain {
 //        } catch (RemoteException e) {
 //            System.out.println("Retry Failed !");
 //            try {
-//                DHRT = syncingRegistry.syncUHRT();
+//                DHRT = syncingRegistry.lookupInUHRT();
 //                System.out.println("Retrying " + retry_count);
 //                if (retry_count <= 5) {
 //                    try {

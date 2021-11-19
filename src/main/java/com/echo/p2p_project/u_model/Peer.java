@@ -26,7 +26,7 @@ public class Peer implements Serializable,Comparable {
     private Integer routingMetric;
     private Integer MissedHartBeat = 0;
     //Only use this possessing in DHRT
-    public HashMap<UUID, Resource> possessing = new LinkedHashMap();
+    public HashMap<String, Resource> possessing = new LinkedHashMap();
 
     public Peer(UUID GUID, String name, String IP, Integer p2P_port, Integer routingMetric) {
         this.GUID = GUID;
@@ -76,11 +76,11 @@ public class Peer implements Serializable,Comparable {
         this.routingMetric = routingMetric;
     }
 
-    public HashMap<UUID, Resource> getPossessing() {
+    public HashMap<String, Resource> getPossessing() {
         return possessing;
     }
 
-    public void setPossessing(HashMap<UUID, Resource> possessing) {
+    public void setPossessing(HashMap<String, Resource> possessing) {
         this.possessing = possessing;
     }
 

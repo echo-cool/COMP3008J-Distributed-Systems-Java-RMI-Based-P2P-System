@@ -1,6 +1,7 @@
 package com.echo.p2p_project.server.interfaces;
 
 import com.echo.p2p_project.u_model.Peer;
+import com.echo.p2p_project.u_model.Resource;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -14,7 +15,8 @@ import java.util.UUID;
  * @Package: com.echo.p2p_project.server.interfaces
  * @Description:
  **/
-public interface SyncingRegistry extends Remote {
+public interface FileLookupRegistry extends Remote {
     Peer syncPeer(UUID GUID) throws RemoteException;
-    HashMap syncUHRT() throws RemoteException;
+//    HashMap lookupInUHRT(String filename) throws RemoteException;
+    Resource lookupInUHRT(String hash) throws RemoteException;
 }

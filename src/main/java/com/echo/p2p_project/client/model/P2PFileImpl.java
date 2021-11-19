@@ -35,7 +35,7 @@ public class P2PFileImpl extends UnicastRemoteObject implements P2P_FileRegistry
 
 
     @Override
-    public byte[] download(UUID resID) throws RemoteException{
+    public byte[] download(String resID) throws RemoteException{
         System.out.println("Income connection.");
         Resource resource = ClientMain.DHRT.get(resID);
         if(resource == null){

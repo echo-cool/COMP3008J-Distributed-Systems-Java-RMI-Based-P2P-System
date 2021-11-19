@@ -2,7 +2,9 @@ package com.echo.p2p_project.server.model;
 
 import com.echo.p2p_project.server.ServerMain;
 import com.echo.p2p_project.u_model.Peer;
+import com.echo.p2p_project.u_model.Resource;
 
+import java.awt.geom.RectangularShape;
 import java.util.UUID;
 
 /**
@@ -42,9 +44,15 @@ public class WatchDog {
                             System.out.println();
                             System.out.println("==================================== REMOVE =====================================");
                             System.out.println("PEER (peer MissedHartBeat > 5): " + uuid);
-                            for (UUID guid : ServerMain.UHPT.get(uuid).possessing.keySet()) {
+                            for (String guid : ServerMain.UHPT.get(uuid).possessing.keySet()) {
                                 System.out.println("Resources: " + guid);
-                                ServerMain.UHRT.remove(guid);
+                                Resource resource = ServerMain.UHRT.get(guid);
+                                if(resource.possessedBy.size() == 1) {
+                                    ServerMain.UHRT.remove(guid);
+                                }
+                                else {
+                                    resource.possessedBy.remove(uuid);
+                                }
                             }
                             ServerMain.UHPT.remove(uuid);
                             System.out.println("=================================================================================");
