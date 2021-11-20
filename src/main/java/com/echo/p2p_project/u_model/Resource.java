@@ -15,6 +15,7 @@ import java.util.UUID;
  * @Description:
  **/
 public class Resource implements Serializable {
+    //All the information about the resource.
     private String GUID;
     private String name;
     public HashMap<UUID, Peer> possessedBy = new LinkedHashMap<>();

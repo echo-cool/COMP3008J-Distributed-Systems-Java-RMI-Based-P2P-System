@@ -35,12 +35,16 @@ public class WatchDog {
                             return;
 //                        System.out.println(p);
                         if (p == null) {
+                            //Really rarely happen, remove the null peer.
                             System.out.println("REMOVED(peer is null): " + uuid);
                             ServerMain.UHPT.remove(uuid);
                             continue;
                         }
+                        //increment the counter
                         p.setMissedHartBeat(p.getMissedHartBeat() + 1);
                         if (p.getMissedHartBeat() > 5) {
+                            //if missed is grater than 5, then this peer is down.
+                            //remove it.
                             System.out.println();
                             System.out.println("==================================== REMOVE =====================================");
                             System.out.println("PEER (peer MissedHartBeat > 5): " + uuid);
@@ -48,9 +52,11 @@ public class WatchDog {
                                 System.out.println("Resources: " + guid);
                                 Resource resource = ServerMain.UHRT.get(guid);
                                 if(resource.possessedBy.size() == 1) {
+                                    //remove from UHRT
                                     ServerMain.UHRT.remove(guid);
                                 }
                                 else {
+                                    //remove from possessedBy
                                     resource.possessedBy.remove(uuid);
                                 }
                             }
@@ -59,6 +65,7 @@ public class WatchDog {
                         }
                     }
                     try {
+                        //sleep and run again.
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         System.out.println("WatchDog Interrupted");

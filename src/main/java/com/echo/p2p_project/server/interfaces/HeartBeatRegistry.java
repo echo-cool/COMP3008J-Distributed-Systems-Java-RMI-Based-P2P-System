@@ -12,5 +12,6 @@ import java.util.UUID;
  * @Description:
  **/
 public interface HeartBeatRegistry extends Remote {
+    //make sure the peer is alive
     Boolean heartBeat(UUID GUID) throws RemoteException;
 }

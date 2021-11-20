@@ -42,11 +42,13 @@ public class FileLookupImpl extends UnicastRemoteObject implements FileLookupReg
 
     @Override
     public Resource lookupInUHRT(String hash) throws RemoteException {
-
+        //try to find the resource.
         Resource res = ServerMain.UHRT.get(hash);
         if(res==null){
+            //not found
             return null;
         }
+        //find the best peer.
         ArrayList<Peer> processed_peers = new ArrayList<>();
         for (Peer p : res.possessedBy.values()) {
             processed_peers.add(p);
@@ -62,6 +64,7 @@ public class FileLookupImpl extends UnicastRemoteObject implements FileLookupReg
             System.out.println(peer.getGUID() + "   <>   " + peer.getRoutingMetric());
         }
         System.out.println("BEST: " + best_peer.getGUID());
+        //Prepare the return result.
         Resource tmp = new Resource(res.getGUID(), res.getName(), res.getHash());
         tmp.possessedBy.put(best_peer.getGUID(), best_peer);
 

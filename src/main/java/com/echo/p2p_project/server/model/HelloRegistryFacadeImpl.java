@@ -28,6 +28,7 @@ public class HelloRegistryFacadeImpl extends UnicastRemoteObject implements Hell
      */
     public HelloRegistryFacadeImpl() throws RemoteException {
         super();
+        //a test.
         System.out.println("HelloRegistryFacadeImpl");
     }
 

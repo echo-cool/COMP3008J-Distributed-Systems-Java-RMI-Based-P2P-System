@@ -51,6 +51,7 @@ public class ClientIndexController {
     public Button lookup_button;
 
     public void initialize() {
+        //Init GUI Controller
         ObservableList<String> local_file_list = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
         ObservableList<Resource> remote_file_list = new ObservableListWrapper<>(Collections.synchronizedList(new ArrayList<>()));
         ClientMain.DHRT.addListener(new MapChangeListener<String, Resource>() {

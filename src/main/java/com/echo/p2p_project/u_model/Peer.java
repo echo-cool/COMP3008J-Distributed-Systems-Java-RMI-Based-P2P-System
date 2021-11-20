@@ -19,6 +19,7 @@ import java.util.UUID;
  * @Description:
  **/
 public class Peer implements Serializable,Comparable {
+    //All the information about the Peer.
     private UUID GUID;
     private String name;
     private String IP;
@@ -146,6 +147,6 @@ public class Peer implements Serializable,Comparable {
     @Override
     public int compareTo(@NotNull Object o) {
         Peer p = (Peer) o;
-        return p.routingMetric - p.routingMetric;
+        return p.routingMetric - this.routingMetric;
     }
 }

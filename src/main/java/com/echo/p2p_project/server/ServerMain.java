@@ -30,6 +30,7 @@ public class ServerMain{
     private static Thread service;
 
     public static void main(String[] args) {
+        //start service
         service = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -37,6 +38,7 @@ public class ServerMain{
             }
         });
         service.start();
+        //start command line promote
         Scanner sc = new Scanner(System.in);
         System.out.println("");
         System.out.print(">>> ");
@@ -47,6 +49,7 @@ public class ServerMain{
                     System.out.print(">>> ");
                     break;
                 case "i":
+                    //get information about the server
                     System.out.println("UHPT: " + UHPT);
                     System.out.println("UHPT Size: " + UHPT.size());
                     System.out.println("UHRT: " + UHRT);
@@ -73,6 +76,7 @@ public class ServerMain{
                 System.out.println("Registered: " + s);
             }
             System.out.println("============ WatchDog ============");
+            //start watch dog.
             if (!HasStarted)
                 WatchDog.startWatchDog();
             System.out.println("======= Start Up Finished ========");
@@ -85,6 +89,7 @@ public class ServerMain{
 
     private static void reg_services() {
         try {
+            //Register all the services.
             HelloRegistryFacade hello = new HelloRegistryFacadeImpl();
             ConstructRegistry constructRegistry = new ConstructImpl();
             HeartBeatRegistry heartBeatRegistry = new HeartBeatImpl();

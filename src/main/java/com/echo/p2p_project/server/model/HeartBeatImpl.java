@@ -33,9 +33,11 @@ public class HeartBeatImpl extends UnicastRemoteObject implements HeartBeatRegis
 
     @Override
     public Boolean heartBeat(UUID GUID) throws RemoteException {
+        //ge the peer
         Peer peer = ServerMain.UHPT.get(GUID);
         if(peer == null)
             return false;
+        //zero out the counter
         peer.setMissedHartBeat(0);
         return true;
     }

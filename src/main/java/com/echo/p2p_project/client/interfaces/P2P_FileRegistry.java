@@ -13,5 +13,6 @@ import java.util.UUID;
  * @Description:
  **/
 public interface P2P_FileRegistry extends Remote {
+    //Proved the services of letting other peer download from this peer.
     byte[] download(String resID) throws RemoteException;
 }

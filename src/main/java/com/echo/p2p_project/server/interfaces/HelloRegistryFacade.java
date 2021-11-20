@@ -11,5 +11,6 @@ import java.rmi.RemoteException;
  * @Description:
  **/
 public interface HelloRegistryFacade extends Remote {
+    //a test for checking if the server is responding
     String helloWorld(String name) throws RemoteException;
 }

@@ -31,8 +31,11 @@ import java.util.*;
  * @Description:
  **/
 public class ClientMain {
+    //The default main server address
     public static String MainServerIP = "127.0.0.1";
+    //The default main server port
     public static int RMI_PORT = 1099;
+    //Information about this peer
     public static Peer peer;
     public static ObservableMapWrapper<String, Resource> DHRT = new ObservableMapWrapper<>(new LinkedHashMap<>());
     public static Integer retry_times = 0;
@@ -52,6 +55,7 @@ public class ClientMain {
 
 
     public static void main(String[] args) throws ConnectException {
+        //service thread
         service = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -64,6 +68,8 @@ public class ClientMain {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        //Command line of the peer
         sc = new Scanner(System.in);
         System.out.println("");
         System.out.print(">>> ");
@@ -71,9 +77,11 @@ public class ClientMain {
             String line = sc.nextLine();
             switch (line) {
                 case "\n":
+                    //Promote
                     System.out.print(">>> ");
                     break;
                 case "i":
+                    //print the information about his peer
                     System.out.println("GUID: " + peer.getGUID());
                     System.out.println("P2P_Port: " + peer.getP2P_port());
                     System.out.println("Possessing: " + peer.getPossessing());
@@ -104,8 +112,11 @@ public class ClientMain {
     }
 
     public static void download(String hash) {
+        //download by hash
+        //first look up this res
         Resource resources = look_up_file(hash);
         if (resources != null) {
+            //found
             System.out.println("Download: " + resources.getGUID());
             download(resources);
         }
@@ -113,6 +124,7 @@ public class ClientMain {
     }
 
     private static void download(String hash, Integer retry_count) {
+        //retry download
         if (download_retry_count <= 5) {
             download_retry_count += 1;
             System.out.println("Retrying " + download_retry_count);
@@ -135,20 +147,25 @@ public class ClientMain {
         Boolean file_status = false;
         hasStarted = false;
         try {
+            //Connect to the main server
             registry = LocateRegistry.getRegistry(MainServerIP, RMI_PORT);
+            //check if connection is successful
             center_status = lookup_registry() && register_peer() ? true : false;
         } catch (RemoteException e) {
 //            e.printStackTrace();
         }
         if (peer == null) {
+            //can't init peer, then server is not start.
             System.out.println("Server Not Running.");
             exit();
         }
 
+        //start regular heart beat to make sure the peer is alive
         CHeartBeat.StartHeart(heartBeatRegistry, peer.getGUID());
 
         //Init file services
         try {
+            //init local server
             file_service = LocateRegistry.createRegistry(Port);
             P2P_FileRegistry p2PFileRegistry = new P2PFileImpl();
             file_service.rebind("p2PFileRegistry", p2PFileRegistry);
@@ -173,8 +190,10 @@ public class ClientMain {
 
     private static Boolean register_peer() {
         System.out.println("+++++++ Register & Construct Peer +++++++");
+        //get one available port
         Port = NetUtil.getUsableLocalPort(35000, 45000);
         try {
+            //get peer information from server
             peer = constructRegistry.ConstructPeer(name, IP, Port);
             System.out.println("+++++++ Peer Construct Success !  +++++++");
             System.out.println("Peer GUID: " + peer.getGUID());
@@ -182,6 +201,7 @@ public class ClientMain {
             System.out.println("+++++++     Register Finished     +++++++");
             return true;
         } catch (RemoteException e) {
+            //server connect failed
             hasStarted = false;
             System.out.println("register_peer RemoteException");
             e.printStackTrace();
@@ -191,6 +211,7 @@ public class ClientMain {
 
     private static Boolean lookup_registry() {
         try {
+            //check if server is responding.
             HelloRegistryFacade hello = (HelloRegistryFacade) registry.lookup("HelloRegistry");
             String response = hello.helloWorld(name);
             System.out.println("=======> " + response + " <=======");
@@ -198,6 +219,7 @@ public class ClientMain {
                 System.out.println("server failed");
                 return false;
             }
+            // get the server functions
             constructRegistry = (ConstructRegistry) registry.lookup("constructRegistry");
             heartBeatRegistry = (HeartBeatRegistry) registry.lookup("heatBeatRegistry");
             fileLookupRegistry = (FileLookupRegistry) registry.lookup("syncingRegistry");
@@ -212,6 +234,7 @@ public class ClientMain {
     }
 
     public static Boolean reg_file(String name) {
+        //register a file
         File file = new File("res/" + name);
         if (!file.exists()) {
             System.out.println("File not exists !");
@@ -221,14 +244,18 @@ public class ClientMain {
             System.out.println("File ok.");
             System.out.println("File length: " + file.length());
         }
+        //get file hash
         String hash = Util.createSha1(file);
         System.out.println(hash);
         try {
+            //send the information about the file to the server
             Resource resource = constructRegistry.ConstructResource(peer.getGUID(), name, hash);
+            //save it to local DHRT
             ClientMain.DHRT.put(resource.getGUID(), resource);
-            DHRT.put(resource.getGUID(), resource);
+//            DHRT.put(resource.getGUID(), resource);
             System.out.println("File Register Success!");
             System.out.println("Resource GUID: " + resource.getGUID());
+            //update possessing list
             sync_peer();
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -239,6 +266,7 @@ public class ClientMain {
     }
 
     private static void sync_peer() {
+        //update possessing list
         try {
             peer = fileLookupRegistry.syncPeer(peer.getGUID());
         } catch (RemoteException e) {
@@ -249,36 +277,48 @@ public class ClientMain {
     }
 
     public static Resource look_up_file(String hash) {
+        //look up a file using hash
         System.out.println("Looking HASH for: " + hash);
+        //try to get from local DHRT
         Resource res = ClientMain.DHRT.get(hash);
         if (res == null) {
+            //not found in local
             System.out.println("Not found in local DHRT");
             System.out.println("Lookup in UHRT...");
             try {
+                //let server find this file
                 res = fileLookupRegistry.lookupInUHRT(hash);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
             if (res == null) {
+                //not in server UHRT
                 System.out.println("Not found in UHRT");
                 System.out.println("Abort");
                 return null;
             }
+            //found the file in server UHRT
             System.out.println("Found in UHRT: " + res.getGUID());
             System.out.println("Update DHRT");
             ClientMain.DHRT.put(res.getGUID(), res);
         }
         else{
+            //found in local
             System.out.println("Found in DHRT.");
         }
         return res;
     }
 
     public static void download(Resource resources) {
+        //download by resources
         if (resources == null || resources.possessedBy.size() == 0) {
+            //resource is invalid
             System.out.println("Resource can not be download !");
             return;
         }
+        //if processed by more than one peer(DHRT), then do sort.
+        //Although server has give the best peer, but since the DHRT is not always up-to-date
+        //so make sure is the best peer.
         ArrayList<Peer> processed_peers = new ArrayList<>();
         for (Peer p : resources.possessedBy.values()) {
             processed_peers.add(p);
@@ -291,19 +331,23 @@ public class ClientMain {
         });
         Peer best_peer = processed_peers.get(0);
         System.out.println("Best peer is: " + best_peer.getGUID());
+        //go download with the best peer
         P2P_download(best_peer, resources);
     }
 
     public static void P2P_download(Peer p, Resource resource) {
+        //download in a new thread
         new Thread(new Runnable() {
             @Override
             public void run() {
+                //start download timing
                 long start_time = System.currentTimeMillis();
                 Integer port = p.getP2P_port();
                 String IP = p.getIP();
                 Registry p2pRegistry = null;
                 File file = null;
                 try {
+                    //get target peer connection
                     p2pRegistry = LocateRegistry.getRegistry(IP, port);
                     System.out.println("Try to connect:   " + p.getGUID());
                     P2P_FileRegistry p2PFileRegistry = (P2P_FileRegistry) p2pRegistry.lookup("p2PFileRegistry");
@@ -311,13 +355,16 @@ public class ClientMain {
                     System.out.println("Downloading FROM: " + p.getGUID());
                     byte[] file_byte = p2PFileRegistry.download(resource.getGUID());
                     System.out.println("File byte[] length: " + file_byte.length);
+                    //end download timing
                     long end_time = System.currentTimeMillis();
                     long start_writing_time = System.currentTimeMillis();
+                    //write to file
                     file = FileUtil.writeBytes(file_byte, new File("download/" + peer.getGUID() + "_FROM_" + p.getGUID() + "_" + resource.getName()));
                     long end_writing_time = System.currentTimeMillis();
                     System.out.println("File downloaded !");
                     System.out.println("File length : " + file.length());
 
+                    //display the result regarding the file size.
                     float file_size_B = file.length();
                     float file_size_KB = file.length() / 1024;
                     float file_size_MB = file_size_KB / 1024;
@@ -347,9 +394,11 @@ public class ClientMain {
                     }
 
                 } catch (RemoteException e) {
+                    //download failed.
                     System.out.println("RemoteException");
                     DHRT.clear();
                     try {
+                        //do re-lookup
                         Resource res = fileLookupRegistry.lookupInUHRT(resource.getGUID());
                         if (res != null)
                             DHRT.put(res.getGUID(), res);
@@ -368,6 +417,7 @@ public class ClientMain {
 
 
     public static void P2P_download(Peer p, Resource resource, Runnable runnable) {
+        //same as the upper function, but with a customizable runnable after the file downloaded
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -496,6 +546,7 @@ public class ClientMain {
     }
 
     public static void recover(int retry_count) {
+        //self-recovery
         retry_count += 1;
         System.out.println("Try to recover......." + retry_count);
         if (retry_count > 10) {
@@ -512,6 +563,7 @@ public class ClientMain {
             @Override
             public void run() {
                 try {
+                    //wait 1s then try again.
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

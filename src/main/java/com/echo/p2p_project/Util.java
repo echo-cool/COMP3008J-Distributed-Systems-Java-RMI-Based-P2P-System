@@ -16,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
  * @Description:
  **/
 public class Util {
+    //A util of getting the ip address.
     public static String getIP() {
         try {
             InetAddress ip4 = Inet4Address.getLocalHost();
@@ -25,6 +26,7 @@ public class Util {
             return null;
         }
     }
+    //get hash using SHA-1
     public static String createSha1(File file){
         MessageDigest digest = null;
         try {

@@ -36,23 +36,28 @@ public class ConstructImpl extends UnicastRemoteObject implements ConstructRegis
 
     @Override
     public Peer ConstructPeer(String name, String IP_Address, Integer P2P_port) throws RemoteException {
+        //get a random UUID
         UUID GUID = UUID.randomUUID();
         if(ServerMain.UHPT.containsKey(GUID)) {
+            //Really Rarely happen, Peer reg failed.
             System.out.println("DUP GUID!!!!!!!");
             return null;
         }
+        //information
         String peerName = name;
         String IP = IP_Address;
         Integer port = P2P_port;
         Random random = new Random();
         Integer routingMetric = random.nextInt(100);
         Peer peer = new Peer(GUID, peerName, IP, port, routingMetric);
+        //put in to UHPT
         ServerMain.UHPT.put(peer.getGUID(), peer);
         System.out.println("Peer Reg: " + peer);
         return peer;
     }
     @Override
     public Resource ConstructResource(UUID PeerGUID, String name, String hash) throws RemoteException {
+        //get Peer from UHPT to insure the integrity
         Peer peer = ServerMain.UHPT.get(PeerGUID);
 
         //If peer not registered in center
@@ -61,18 +66,23 @@ public class ConstructImpl extends UnicastRemoteObject implements ConstructRegis
 
         //If duplicated GUID
         if(ServerMain.UHRT.containsKey(hash)) {
-            // Res is in UHRT
+            // Res is in UHRT, so DUP GUID
             System.out.println("DUP GUID! Res is in UHRT");
             Resource res = ServerMain.UHRT.get(hash);
+            //add to possessedBy
             res.possessedBy.put(peer.getGUID(), peer);
+            //add to possessing
             ServerMain.UHPT.get(peer.getGUID()).possessing.put(res.getGUID(), res);
             return res;
         }
 
         String ResName = name;
+        //not in UHRT, create a new one
         Resource res = new Resource(hash, ResName, hash);
+        //add to possessedBy
         res.possessedBy.put(peer.getGUID(), peer);
         ServerMain.UHRT.put(res.getGUID(), res);
+        //add to possessing
         ServerMain.UHPT.get(peer.getGUID()).possessing.put(res.getGUID(), res);
         System.out.println("Resources Registered: " + res);
         return res;

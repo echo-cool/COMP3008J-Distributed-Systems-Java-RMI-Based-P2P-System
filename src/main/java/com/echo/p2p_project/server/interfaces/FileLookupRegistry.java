@@ -16,7 +16,8 @@ import java.util.UUID;
  * @Description:
  **/
 public interface FileLookupRegistry extends Remote {
+    //update the peer's possessing list
     Peer syncPeer(UUID GUID) throws RemoteException;
-//    HashMap lookupInUHRT(String filename) throws RemoteException;
+    //lookup in server UHRT using the GUID(hash)
     Resource lookupInUHRT(String hash) throws RemoteException;
 }
