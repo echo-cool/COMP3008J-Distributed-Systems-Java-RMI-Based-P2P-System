@@ -1,7 +1,7 @@
 package com.echo.p2p_project.u_model;
 
 import cn.hutool.Hutool;
-import com.sun.istack.internal.NotNull;
+//import com.sun.istack.internal.NotNull;
 
 import java.io.Serializable;
 import java.net.Inet4Address;
@@ -145,7 +145,7 @@ public class Peer implements Serializable,Comparable {
      *                              from being compared to this object.
      */
     @Override
-    public int compareTo(@NotNull Object o) {
+    public int compareTo(Object o) {
         Peer p = (Peer) o;
         return p.routingMetric - this.routingMetric;
     }
