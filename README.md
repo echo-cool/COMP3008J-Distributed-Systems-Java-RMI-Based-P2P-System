@@ -8,6 +8,8 @@ This application has two versions.
 
 You can use any of them up to your choice.
 
+![https://www.yuyangwang.org/assets/images/Generation%20II%20Peer-to-Peer%20Distributed%20System%20(Java).png](https://www.yuyangwang.org/assets/images/Generation%20II%20Peer-to-Peer%20Distributed%20System%20(Java).png)
+
 ## Run
 
 ### Console Version
